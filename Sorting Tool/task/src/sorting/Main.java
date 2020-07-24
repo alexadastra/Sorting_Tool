@@ -79,6 +79,9 @@ class SortingLongs extends SortingElements {
 
 class SortingLines extends SortingElements {
     ArrayList<String> inputs;
+    Map<String, Integer> dataEntryToCount;
+    List<Integer> counts;
+    Map<Integer, Set<String>> countToDataEntries;
 
     public static short compareStrings(String first, String second) {
         if (first.length() > second.length()){
