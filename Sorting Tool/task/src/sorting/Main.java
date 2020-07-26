@@ -29,8 +29,8 @@ abstract class SortingElements {
         scanner = new Scanner(System.in);
     }
 
-    public static short percentage(int a, int b){
-        return (short) (100.0 * (float) a / (float) b );
+    public static int percentage(int a, int b){
+        return (int) Math.round(100.0 * (float) a / (float) b );
     }
 }
 
@@ -44,7 +44,12 @@ class SortingLongs extends SortingElements {
 
     void parseElements() {
         while (scanner.hasNext()) {
-            inputs.add(scanner.nextLong());
+            String str = scanner.next();
+            try{
+                inputs.add(Long.parseLong(str));
+            } catch (RuntimeException err) {
+                System.out.println("\"" + str + "\"" + " isn't a valid parameter. It's skipped.");
+            }
         }
     }
 
@@ -103,6 +108,11 @@ class SortingLines extends SortingElements {
     public SortingLines(String type) {
         super(type);
         inputs = new ArrayList<>();
+        if (sortingType.equals("byCount")){
+            dataEntryToCount = new HashMap<String, Integer>();
+            counts = new ArrayList<>();
+            countToDataEntries = new TreeMap<>();
+        }
     }
 
     void parseElements() {
@@ -157,7 +167,7 @@ class SortingWords extends SortingLines {
     void sortElementsNaturally() {
         Collections.sort(inputs);
         System.out.println("Total words: " + inputs.size() + ".");
-        System.out.print("Sorted data: ");
+        //System.out.print("Sorted data: ");
         for (String i : inputs) {
             System.out.print(i + " ");
         }
@@ -191,10 +201,21 @@ public class Main{
         String sortingTypeString = "natural";
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-sortingType")) {
-                sortingTypeString = args[i+1];
+                try{
+                    sortingTypeString = args[i+1];
+                } catch (IndexOutOfBoundsException err) {
+                    System.out.println("No sorting type defined!");
+                }
             }
-            if (args[i].equals("-dataType")) {
-                dataTypeString = args[i+1];
+            else if (args[i].equals("-dataType")) {
+                try{
+                    dataTypeString = args[i+1];
+                } catch (IndexOutOfBoundsException err) {
+                    System.out.println("No data type defined!");
+                }
+            }
+            else if (args[i].startsWith("-")){
+                System.out.println("\"" + args[i] + "\" isn't a valid parameter. It's skipped.");
             }
         }
 
