@@ -1,11 +1,15 @@
 package sorting;
 
+import java.io.*;
+import java.nio.file.NoSuchFileException;
 import java.util.*;
 
 abstract class SortingElements {
     int total;
     int maxAppearance;
     Scanner scanner;
+    FileWriter writer;
+    ArrayList<String> output;
     String sortingType;
 
     abstract void parseElements();
@@ -22,11 +26,44 @@ abstract class SortingElements {
         }
     }
 
-    public SortingElements(String type) {
+    public SortingElements(String type, String in, String out) {
         total = 0;
         maxAppearance = 0;
         sortingType = type;
-        scanner = new Scanner(System.in);
+        if (!(in.isBlank())) {
+            try {
+                scanner = new Scanner(new File(in));
+            } catch (FileNotFoundException err) {
+                System.out.println("No such input file!");
+            }
+        } else {
+            scanner = new Scanner(System.in);
+        }
+
+        if (!(out.isBlank())) {
+            try {
+                writer = new FileWriter(new File(out));
+            } catch (IOException err) {
+                System.out.println("No such output file!");
+            }
+        }
+        output = new ArrayList<>();
+    }
+
+    public void writeln(ArrayList<String> text) {
+        if (writer != null) {
+            for (String i : text) {
+                try{
+                    writer.write(i + '\n');
+                } catch (IOException err){
+                    System.out.println("exception occurred!");
+                }
+            }
+        } else {
+            for (String i : text) {
+                System.out.println(i);
+            }
+        }
     }
 
     public static int percentage(int a, int b){
@@ -37,8 +74,8 @@ abstract class SortingElements {
 class SortingLongs extends SortingElements {
     ArrayList<Long> inputs;
 
-    public SortingLongs(String type) {
-        super(type);
+    public SortingLongs(String type, String in, String out) {
+        super(type, in, out);
         inputs = new ArrayList<>();
     }
 
@@ -56,10 +93,13 @@ class SortingLongs extends SortingElements {
     void sortElementsNaturally() {
         Collections.sort(inputs);
         System.out.println("Total numbers: " + inputs.size() + ".");
-        System.out.print("Sorted data: ");
+        output.add("Sorted data: ");
+        String nums = "";
         for (Long i : inputs) {
-            System.out.print(i + " ");
+            nums = nums.concat(i + " ");
         }
+        output.add(nums);
+        writeln(output);
     }
 
     void sortElementsByCount() {
@@ -105,11 +145,11 @@ class SortingLines extends SortingElements {
         }
     }
 
-    public SortingLines(String type) {
-        super(type);
+    public SortingLines(String type, String in, String out) {
+        super(type, in, out);
         inputs = new ArrayList<>();
         if (sortingType.equals("byCount")){
-            dataEntryToCount = new HashMap<String, Integer>();
+            dataEntryToCount = new HashMap<>();
             counts = new ArrayList<>();
             countToDataEntries = new TreeMap<>();
         }
@@ -125,11 +165,12 @@ class SortingLines extends SortingElements {
 
     void sortElementsNaturally() {
         Collections.sort(inputs);
-        System.out.println("Total lines: " + inputs.size() + ".");
-        System.out.println("Sorted data: ");
+        output.add("Total lines: " + inputs.size() + ".");
+        output.add("Sorted data: ");
         for (String i : inputs) {
-            System.out.println(i);
+            output.add(i);
         }
+        writeln(output);
     }
 
     void sortElementsByCount() {
@@ -153,8 +194,8 @@ class SortingLines extends SortingElements {
 
 class SortingWords extends SortingLines {
 
-    public SortingWords(String type) {
-        super(type);
+    public SortingWords(String type, String in, String out) {
+        super(type, in, out);
     }
 
     void parseElements() {
@@ -166,11 +207,13 @@ class SortingWords extends SortingLines {
 
     void sortElementsNaturally() {
         Collections.sort(inputs);
-        System.out.println("Total words: " + inputs.size() + ".");
-        //System.out.print("Sorted data: ");
+        output.add("Total words: " + inputs.size() + ".");
+        String words = "";
         for (String i : inputs) {
-            System.out.print(i + " ");
+            words = words.concat(i + " ");
         }
+        output.add(words);
+        writeln(output);
     }
 
     void sortElementsByCount() {
@@ -199,6 +242,8 @@ public class Main{
     static String[] parceArguments(final String[] args) {
         String dataTypeString = "";
         String sortingTypeString = "natural";
+        String inputFileString = "";
+        String outputFileString = "";
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-sortingType")) {
                 try{
@@ -214,12 +259,26 @@ public class Main{
                     System.out.println("No data type defined!");
                 }
             }
+            else if (args[i].equals("-inputFile")) {
+                try{
+                    inputFileString = args[i+1];
+                } catch (IndexOutOfBoundsException err) {
+                    System.out.println("No input file defined!");
+                }
+            }
+            else if (args[i].equals("-outputFile")) {
+                try{
+                    outputFileString = args[i+1];
+                } catch (IndexOutOfBoundsException err) {
+                    System.out.println("No output file defined!");
+                }
+            }
             else if (args[i].startsWith("-")){
                 System.out.println("\"" + args[i] + "\" isn't a valid parameter. It's skipped.");
             }
         }
 
-        return new String[] {dataTypeString, sortingTypeString};
+        return new String[] {dataTypeString, sortingTypeString, inputFileString, outputFileString};
     }
 
     public static void main(final String[] args) {
